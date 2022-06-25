@@ -33,7 +33,26 @@ module Jekyll
         coll = []
         site_collections.each do |coll_name, coll_data|
           if !coll_data.nil? 
-            coll += coll_data.docs.select { |doc| !doc.data.has_key?('pagination') }.each{ |doc| doc.data['__coll'] = coll_name } # Exclude all pagination pages and then for every page store it's collection name
+            coll += coll_data.docs.select { |doc| 
+              data = doc.data
+              ok = true
+        
+              if (data.has_key?('pagination')) # Exclude all pagination pages and then for every page store it's collection name
+                ok = false
+              end 
+              if (!data['autopage'].nil?)
+                if (data['autopage'].is_a?(Hash))
+                  ap_enabled = data['autopage']['enabled']
+                  if (ap_enabled != nil and ap_enabled != true)
+                    ok = false
+                  end
+                elsif (data['autopage'] != true)
+                  ok = false
+                end
+              end
+              
+              ok
+            }.each{ |doc| doc.data['__coll'] = coll_name }
           end
         end
         return coll
